@@ -109,6 +109,7 @@ ORB_DEFINE(vehicle_global_position, struct vehicle_global_position_s);
 #include "topics/vehicle_local_position.h"
 ORB_DEFINE(vehicle_local_position, struct vehicle_local_position_s);
 
+
 #include "topics/vehicle_vicon_position.h"
 ORB_DEFINE(vehicle_vicon_position, struct vehicle_vicon_position_s);
 
@@ -224,3 +225,7 @@ ORB_DEFINE(tecs_status, struct tecs_status_s);
 
 #include "topics/wind_estimate.h"
 ORB_DEFINE(wind_estimate, struct wind_estimate_s);
+
+// James adds the next 2 lines.
+#include "topics/vehicle_transition_state.h"
+ORB_DEFINE(vehicle_transition_state, struct vehicle_transition_state_s);

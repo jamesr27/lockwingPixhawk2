@@ -4,9 +4,35 @@
 # att & pos estimator, att & pos control.
 #
 
-attitude_estimator_ekf start
-#ekf_att_pos_estimator start
+
+# Now we are going to start experimenting.
+# The default quad estimator is the attitude_estimator_ekf, this works fine.
+# The default fixed wing estimator is ekf_att_poss_estimator
+
+
+# The fixed wing estimator now works with the quad. We have to use the quad position estimator
+# still for the quad. For fixed wing we use the fixed wing controllers.
+# In order to manage vehicle states, a new daemon is written. All controllers now listen to this, and only 
+# publish data if in an appropriate state. They all run concurrently however, so there is now start-up/initialisation
+# issues in turning them on and off during transition.
+
+# At present it is only planned to limit the publishing abilities of the controllers and position estimators
+# depending upon the state that the vehicle is in. We'll see if we get this to work...
+
+# TRANSITION STATE CONTROLLER
+transition_state_controller start
+
+# FIXED WING STATE ESTIMATOR
+ekf_att_pos_estimator start
+
+# QUAD STATE ESTIMATORS - ONLY USE POSITION ESTIMATOR. ATTITUDE IS DEALT WITH BY FIXED WING ESTIMATOR.
+#attitude_estimator_ekf start
 position_estimator_inav start
 
+# QUAD CONTROLLERS
 mc_att_control start
 mc_pos_control start
+
+# FIXED WING CONTROLLERS
+fw_att_control start
+fw_pos_control_l1 start

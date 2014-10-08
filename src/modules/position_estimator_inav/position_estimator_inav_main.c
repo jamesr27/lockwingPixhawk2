@@ -342,6 +342,7 @@ int position_estimator_inav_thread_main(int argc, char *argv[])
 	int home_position_sub = orb_subscribe(ORB_ID(home_position));
 
 	/* advertise */
+	// James adds _mc below
 	orb_advert_t vehicle_local_position_pub = orb_advertise(ORB_ID(vehicle_local_position), &local_pos);
 	orb_advert_t vehicle_global_position_pub = -1;
 
@@ -421,7 +422,7 @@ int position_estimator_inav_thread_main(int argc, char *argv[])
 			attitude_updates++;
 
 			bool updated;
-
+//#include "topics/vehicle_global_position_mc.h"
 			/* parameter update */
 			orb_check(parameter_update_sub, &updated);
 
@@ -1136,6 +1137,7 @@ int position_estimator_inav_thread_main(int argc, char *argv[])
 
 			local_pos.timestamp = t;
 
+			// James adds _mc below
 			orb_publish(ORB_ID(vehicle_local_position), vehicle_local_position_pub, &local_pos);
 
 			if (local_pos.xy_global && local_pos.z_global) {
@@ -1160,9 +1162,11 @@ int position_estimator_inav_thread_main(int argc, char *argv[])
 				global_pos.epv = epv;
 
 				if (vehicle_global_position_pub < 0) {
+					// James adds _mc below
 					vehicle_global_position_pub = orb_advertise(ORB_ID(vehicle_global_position), &global_pos);
 
 				} else {
+					// James adds _mc below
 					orb_publish(ORB_ID(vehicle_global_position), vehicle_global_position_pub, &global_pos);
 				}
 			}

@@ -92,6 +92,9 @@
 #include "landingslope.h"
 #include "mtecs/mTecs.h"
 
+// James adds
+#include <uORB/topics/vehicle_transition_state.h>
+
 static int	_control_task = -1;			/**< task handle for sensor task */
 
 
@@ -161,6 +164,9 @@ private:
 	struct position_setpoint_triplet_s		_pos_sp_triplet;		/**< triplet of mission items */
 	struct sensor_combined_s			_sensor_combined;		/**< for body frame accelerations */
 	struct range_finder_report 			_range_finder;			/**< range finder report */
+
+	// James adds
+	struct vehicle_transition_state_s _transition_state;
 
 	perf_counter_t	_loop_perf;			/**< loop performance counter */
 
@@ -819,10 +825,13 @@ FixedwingPositionControl::calculate_gndspeed_undershoot(const math::Vector<2> &c
 
 void FixedwingPositionControl::navigation_capabilities_publish()
 {
-	if (_nav_capabilities_pub > 0) {
-		orb_publish(ORB_ID(navigation_capabilities), _nav_capabilities_pub, &_nav_capabilities);
-	} else {
-		_nav_capabilities_pub = orb_advertise(ORB_ID(navigation_capabilities), &_nav_capabilities);
+	// James adds. We only publish if not in rotor craft mode, state 0.
+	if (_transition_state.vehicle_state != 0){
+		if (_nav_capabilities_pub > 0) {
+			orb_publish(ORB_ID(navigation_capabilities), _nav_capabilities_pub, &_nav_capabilities);
+		} else {
+			_nav_capabilities_pub = orb_advertise(ORB_ID(navigation_capabilities), &_nav_capabilities);
+		}
 	}
 }
 
@@ -1254,6 +1263,10 @@ FixedwingPositionControl::task_main()
 	_manual_control_sub = orb_subscribe(ORB_ID(manual_control_setpoint));
 	_range_finder_sub = orb_subscribe(ORB_ID(sensor_range_finder));
 
+	// James adds
+	int _transition_state_sub = orb_subscribe(ORB_ID(vehicle_transition_state));
+
+
 	/* rate limit vehicle status updates to 5Hz */
 	orb_set_interval(_control_mode_sub, 200);
 	/* rate limit position updates to 50 Hz */
@@ -1281,6 +1294,9 @@ FixedwingPositionControl::task_main()
 
 		/* wait for up to 500ms for data */
 		int pret = poll(&fds[0], (sizeof(fds) / sizeof(fds[0])), 100);
+
+		// James adds. Get latest vehicle state from uORB.
+		orb_copy(ORB_ID(vehicle_transition_state),_transition_state_sub,&_transition_state);
 
 		/* timed out - periodic check for _task_should_exit, etc. */
 		if (pret == 0)
@@ -1340,13 +1356,16 @@ FixedwingPositionControl::task_main()
 				_att_sp.timestamp = hrt_absolute_time();
 
 				/* lazily publish the setpoint only once available */
-				if (_attitude_sp_pub > 0) {
-					/* publish the attitude setpoint */
-					orb_publish(ORB_ID(vehicle_attitude_setpoint), _attitude_sp_pub, &_att_sp);
+				// James adds. We only publish if not in rotor craft mode, state 0.
+				if (_transition_state.vehicle_state != 0){
+					if (_attitude_sp_pub > 0) {
+						/* publish the attitude setpoint */
+						orb_publish(ORB_ID(vehicle_attitude_setpoint), _attitude_sp_pub, &_att_sp);
 
-				} else {
-					/* advertise and publish */
-					_attitude_sp_pub = orb_advertise(ORB_ID(vehicle_attitude_setpoint), &_att_sp);
+					} else {
+						/* advertise and publish */
+						_attitude_sp_pub = orb_advertise(ORB_ID(vehicle_attitude_setpoint), &_att_sp);
+					}
 				}
 
 				/* XXX check if radius makes sense here */
@@ -1473,10 +1492,13 @@ void FixedwingPositionControl::tecs_update_pitch_throttle(float alt_sp, float v_
 		t.energyDistributionRateSp	= s.ptch;
 		t.energyDistributionRate	= s.iptch;
 
-		if (_tecs_status_pub > 0) {
-			orb_publish(ORB_ID(tecs_status), _tecs_status_pub, &t);
-		} else {
-			_tecs_status_pub = orb_advertise(ORB_ID(tecs_status), &t);
+		// James adds. We only publish if not in rotor craft mode, state 0.
+		if (_transition_state.vehicle_state != 0){
+			if (_tecs_status_pub > 0) {
+				orb_publish(ORB_ID(tecs_status), _tecs_status_pub, &t);
+			} else {
+				_tecs_status_pub = orb_advertise(ORB_ID(tecs_status), &t);
+			}
 		}
 	}
 }

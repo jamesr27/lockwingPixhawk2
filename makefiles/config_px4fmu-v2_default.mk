@@ -96,6 +96,12 @@ MODULES		+= modules/mc_att_control
 MODULES		+= modules/mc_pos_control
 
 #
+# Lock Wing state controller
+#
+MODULES += modules/transition_state_controller
+
+
+#
 # Logging
 #
 MODULES		+= modules/sdlog2

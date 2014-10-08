@@ -73,6 +73,11 @@
 #include <mathlib/mathlib.h>
 #include <lib/geo/geo.h>
 #include <mavlink/mavlink_log.h>
+// James adds
+#include <uORB/topics/vehicle_transition_state.h>
+
+// James adds
+#include <uORB/topics/vehicle_transition_state.h>
 
 #define TILT_COS_MAX	0.7f
 #define SIGMA			0.000001f
@@ -669,6 +674,11 @@ MulticopterPositionControl::task_main()
 	_local_pos_sp_sub = orb_subscribe(ORB_ID(vehicle_local_position_setpoint));
 	_global_vel_sp_sub = orb_subscribe(ORB_ID(vehicle_global_velocity_setpoint));
 
+	// James adds
+	int _transition_state_sub = orb_subscribe(ORB_ID(vehicle_transition_state));
+	struct vehicle_transition_state_s _transition_state;
+	memset(&_transition_state,0,sizeof(_transition_state));
+
 
 	parameters_update(true);
 
@@ -699,6 +709,9 @@ MulticopterPositionControl::task_main()
 	while (!_task_should_exit) {
 		/* wait for up to 500ms for data */
 		int pret = poll(&fds[0], (sizeof(fds) / sizeof(fds[0])), 500);
+
+		// James adds. Get latest vehicle state from uORB.
+		orb_copy(ORB_ID(vehicle_transition_state),_transition_state_sub,&_transition_state);
 
 		/* timed out - periodic check for _task_should_exit */
 		if (pret == 0) {
@@ -794,14 +807,18 @@ MulticopterPositionControl::task_main()
 			_local_pos_sp.z = _pos_sp(2);
 			_local_pos_sp.yaw = _att_sp.yaw_body;
 
+
+
 			/* publish local position setpoint */
-			if (_local_pos_sp_pub > 0) {
-				orb_publish(ORB_ID(vehicle_local_position_setpoint), _local_pos_sp_pub, &_local_pos_sp);
+			// James adds. We only publish if in transition state 0.
+			if (_transition_state.vehicle_state == 0){
+				if (_local_pos_sp_pub > 0) {
+					orb_publish(ORB_ID(vehicle_local_position_setpoint), _local_pos_sp_pub, &_local_pos_sp);
 
-			} else {
-				_local_pos_sp_pub = orb_advertise(ORB_ID(vehicle_local_position_setpoint), &_local_pos_sp);
+				} else {
+					_local_pos_sp_pub = orb_advertise(ORB_ID(vehicle_local_position_setpoint), &_local_pos_sp);
+				}
 			}
-
 
 			if (!_control_mode.flag_control_manual_enabled && _pos_sp_triplet.current.valid && _pos_sp_triplet.current.type == SETPOINT_TYPE_IDLE) {
 				/* idle state, don't run controller and set zero thrust */
@@ -817,11 +834,14 @@ MulticopterPositionControl::task_main()
 				_att_sp.timestamp = hrt_absolute_time();
 
 				/* publish attitude setpoint */
-				if (_att_sp_pub > 0) {
-					orb_publish(ORB_ID(vehicle_attitude_setpoint), _att_sp_pub, &_att_sp);
+				// James adds. We only publish if in transition state 0.
+				if (_transition_state.vehicle_state == 0){
+					if (_att_sp_pub > 0) {
+						orb_publish(ORB_ID(vehicle_attitude_setpoint), _att_sp_pub, &_att_sp);
 
-				} else {
-					_att_sp_pub = orb_advertise(ORB_ID(vehicle_attitude_setpoint), &_att_sp);
+					} else {
+						_att_sp_pub = orb_advertise(ORB_ID(vehicle_attitude_setpoint), &_att_sp);
+					}
 				}
 
 			} else {
@@ -861,11 +881,14 @@ MulticopterPositionControl::task_main()
 				_global_vel_sp.vz = _vel_sp(2);
 
 				/* publish velocity setpoint */
-				if (_global_vel_sp_pub > 0) {
-					orb_publish(ORB_ID(vehicle_global_velocity_setpoint), _global_vel_sp_pub, &_global_vel_sp);
+				// James adds. We only publish if in transition state 0.
+				if (_transition_state.vehicle_state == 0){
+					if (_global_vel_sp_pub > 0) {
+						orb_publish(ORB_ID(vehicle_global_velocity_setpoint), _global_vel_sp_pub, &_global_vel_sp);
 
-				} else {
-					_global_vel_sp_pub = orb_advertise(ORB_ID(vehicle_global_velocity_setpoint), &_global_vel_sp);
+					} else {
+						_global_vel_sp_pub = orb_advertise(ORB_ID(vehicle_global_velocity_setpoint), &_global_vel_sp);
+					}
 				}
 
 				if (_control_mode.flag_control_climb_rate_enabled || _control_mode.flag_control_velocity_enabled) {
@@ -1116,11 +1139,14 @@ MulticopterPositionControl::task_main()
 					_att_sp.timestamp = hrt_absolute_time();
 
 					/* publish attitude setpoint */
-					if (_att_sp_pub > 0) {
-						orb_publish(ORB_ID(vehicle_attitude_setpoint), _att_sp_pub, &_att_sp);
+					// James adds. We only publish if in transition state 0.
+					if (_transition_state.vehicle_state == 0){
+						if (_att_sp_pub > 0) {
+							orb_publish(ORB_ID(vehicle_attitude_setpoint), _att_sp_pub, &_att_sp);
 
-					} else {
-						_att_sp_pub = orb_advertise(ORB_ID(vehicle_attitude_setpoint), &_att_sp);
+						} else {
+							_att_sp_pub = orb_advertise(ORB_ID(vehicle_attitude_setpoint), &_att_sp);
+						}
 					}
 
 				} else {

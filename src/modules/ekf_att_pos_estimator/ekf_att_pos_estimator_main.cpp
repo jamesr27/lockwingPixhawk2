@@ -86,7 +86,8 @@
 
 #include "estimator_23states.h"
 
-
+// James adds
+#include <uORB/topics/vehicle_transition_state.h>
 
 /**
  * estimator app start / stop handling function
@@ -726,6 +727,10 @@ FixedwingEstimator::task_main()
 	_vstatus_sub = orb_subscribe(ORB_ID(vehicle_status));
 	_params_sub = orb_subscribe(ORB_ID(parameter_update));
 	_home_sub = orb_subscribe(ORB_ID(home_position));
+	// James Adds
+	int _transition_state_sub = orb_subscribe(ORB_ID(vehicle_transition_state));
+	struct vehicle_transition_state_s _transition_state;
+	memset(&_transition_state,0,sizeof(_transition_state));
 
 	/* rate limit vehicle status updates to 5Hz */
 	orb_set_interval(_vstatus_sub, 200);
@@ -738,11 +743,14 @@ FixedwingEstimator::task_main()
 
 	/* rate limit gyro updates to 50 Hz */
 	/* XXX remove this!, BUT increase the data buffer size! */
+	// James edits, halves it. Originally 4.
+	// CHanges the sensor combined down too. Was orignally 9.
+	// 4 and 5 work well. Quad appear much more stable.
 	orb_set_interval(_gyro_sub, 4);
 #else
 	_sensor_combined_sub = orb_subscribe(ORB_ID(sensor_combined));
 	/* XXX remove this!, BUT increase the data buffer size! */
-	orb_set_interval(_sensor_combined_sub, 9);
+	orb_set_interval(_sensor_combined_sub, 5);
 #endif
 
 	/* sets also parameters in the EKF object */
@@ -783,7 +791,12 @@ FixedwingEstimator::task_main()
 	while (!_task_should_exit) {
 
 		/* wait for up to 500ms for data */
+		// James edits... Looks like it is 10Hz to me. I didn't change anything below.
 		int pret = poll(&fds[0], (sizeof(fds) / sizeof(fds[0])), 100);
+
+		// James adds. Get latest vehivle state from uORB.
+		orb_copy(ORB_ID(vehicle_transition_state),_transition_state_sub,&_transition_state);
+
 
 		/* timed out - periodic check for _task_should_exit, etc. */
 		if (pret == 0)
@@ -1449,14 +1462,17 @@ FixedwingEstimator::task_main()
 						_local_pos.z_global = false;
 						_local_pos.yaw = _att.yaw;
 
-						/* lazily publish the local position only once available */
-						if (_local_pos_pub > 0) {
-							/* publish the attitude setpoint */
-							orb_publish(ORB_ID(vehicle_local_position), _local_pos_pub, &_local_pos);
+						// James adds. We only advertise this if not in transition_state 0.
+						// lazily publish the local position only once available
+						if (_transition_state.vehicle_state != 0){
+							if (_local_pos_pub > 0) {
+								// publish the attitude setpoint
+								orb_publish(ORB_ID(vehicle_local_position), _local_pos_pub, &_local_pos);
 
-						} else {
-							/* advertise and publish */
-							_local_pos_pub = orb_advertise(ORB_ID(vehicle_local_position), &_local_pos);
+							} else {
+								// advertise and publish
+								_local_pos_pub = orb_advertise(ORB_ID(vehicle_local_position), &_local_pos);
+							}
 						}
 
 						_global_pos.timestamp = _local_pos.timestamp;
@@ -1498,14 +1514,17 @@ FixedwingEstimator::task_main()
 
 						_global_pos.timestamp = _local_pos.timestamp;
 
+						// James adds. We only want to do this if not in transition_state 0.
 						/* lazily publish the global position only once available */
-						if (_global_pos_pub > 0) {
-							/* publish the global position */
-							orb_publish(ORB_ID(vehicle_global_position), _global_pos_pub, &_global_pos);
+						if (_transition_state.vehicle_state != 0){
+							if (_global_pos_pub > 0) {
+								// publish the global position
+								orb_publish(ORB_ID(vehicle_global_position), _global_pos_pub, &_global_pos);
 
-						} else {
-							/* advertise and publish */
-							_global_pos_pub = orb_advertise(ORB_ID(vehicle_global_position), &_global_pos);
+							} else {
+								// advertise and publish
+								_global_pos_pub = orb_advertise(ORB_ID(vehicle_global_position), &_global_pos);
+							}
 						}
 
 						if (hrt_elapsed_time(&_wind.timestamp) > 99000) {
@@ -1556,7 +1575,7 @@ FixedwingEstimator::start()
 	_estimator_task = task_spawn_cmd("ekf_att_pos_estimator",
 					 SCHED_DEFAULT,
 					 SCHED_PRIORITY_MAX - 40,
-					 5000,
+					 8000,
 					 (main_t)&FixedwingEstimator::task_main_trampoline,
 					 nullptr);
 

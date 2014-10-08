@@ -94,4 +94,5 @@ struct vehicle_local_position_s {
 /* register this as object request broker structure */
 ORB_DECLARE(vehicle_local_position);
 
+
 #endif

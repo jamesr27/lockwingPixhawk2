@@ -75,6 +75,8 @@
 #include <systemlib/circuit_breaker.h>
 #include <lib/mathlib/mathlib.h>
 #include <lib/geo/geo.h>
+// James adds
+#include <uORB/topics/vehicle_transition_state.h>
 
 /**
  * Multicopter attitude control app start / stop handling function
@@ -735,6 +737,12 @@ MulticopterAttitudeControl::task_main()
 	_manual_control_sp_sub = orb_subscribe(ORB_ID(manual_control_setpoint));
 	_armed_sub = orb_subscribe(ORB_ID(actuator_armed));
 
+	// James adds
+	int _transition_state_sub = orb_subscribe(ORB_ID(vehicle_transition_state));
+	struct vehicle_transition_state_s _transition_state;
+	memset(&_transition_state,0,sizeof(_transition_state));
+
+
 	/* initialize parameters cache */
 	parameters_update();
 
@@ -748,6 +756,9 @@ MulticopterAttitudeControl::task_main()
 
 		/* wait for up to 100ms for data */
 		int pret = poll(&fds[0], (sizeof(fds) / sizeof(fds[0])), 100);
+
+		// James adds. Get latest vehicle state from uORB.
+		orb_copy(ORB_ID(vehicle_transition_state),_transition_state_sub,&_transition_state);
 
 		/* timed out - periodic check for _task_should_exit */
 		if (pret == 0)
@@ -796,11 +807,14 @@ MulticopterAttitudeControl::task_main()
 				_v_rates_sp.thrust = _thrust_sp;
 				_v_rates_sp.timestamp = hrt_absolute_time();
 
-				if (_v_rates_sp_pub > 0) {
-					orb_publish(ORB_ID(vehicle_rates_setpoint), _v_rates_sp_pub, &_v_rates_sp);
+				// James adds. We only publish if in transition state 0.
+				if (_transition_state.vehicle_state == 0){
+					if (_v_rates_sp_pub > 0) {
+						orb_publish(ORB_ID(vehicle_rates_setpoint), _v_rates_sp_pub, &_v_rates_sp);
 
-				} else {
-					_v_rates_sp_pub = orb_advertise(ORB_ID(vehicle_rates_setpoint), &_v_rates_sp);
+					} else {
+						_v_rates_sp_pub = orb_advertise(ORB_ID(vehicle_rates_setpoint), &_v_rates_sp);
+					}
 				}
 
 			} else {
@@ -820,11 +834,14 @@ MulticopterAttitudeControl::task_main()
 					_v_rates_sp.thrust = _thrust_sp;
 					_v_rates_sp.timestamp = hrt_absolute_time();
 
-					if (_v_rates_sp_pub > 0) {
-						orb_publish(ORB_ID(vehicle_rates_setpoint), _v_rates_sp_pub, &_v_rates_sp);
+					// James adds. We only publish if in transition state 0.
+					if (_transition_state.vehicle_state == 0){
+						if (_v_rates_sp_pub > 0) {
+							orb_publish(ORB_ID(vehicle_rates_setpoint), _v_rates_sp_pub, &_v_rates_sp);
 
-					} else {
-						_v_rates_sp_pub = orb_advertise(ORB_ID(vehicle_rates_setpoint), &_v_rates_sp);
+						} else {
+							_v_rates_sp_pub = orb_advertise(ORB_ID(vehicle_rates_setpoint), &_v_rates_sp);
+						}
 					}
 
 				} else {
@@ -847,12 +864,15 @@ MulticopterAttitudeControl::task_main()
 				_actuators.control[3] = (isfinite(_thrust_sp)) ? _thrust_sp : 0.0f;
 				_actuators.timestamp = hrt_absolute_time();
 
-				if (!_actuators_0_circuit_breaker_enabled) {
-					if (_actuators_0_pub > 0) {
-						orb_publish(ORB_ID(actuator_controls_0), _actuators_0_pub, &_actuators);
+				// James adds. We only publish if in transition state 0.
+				if (_transition_state.vehicle_state == 0){
+					if (!_actuators_0_circuit_breaker_enabled) {
+						if (_actuators_0_pub > 0) {
+							orb_publish(ORB_ID(actuator_controls_0), _actuators_0_pub, &_actuators);
 
-					} else {
-						_actuators_0_pub = orb_advertise(ORB_ID(actuator_controls_0), &_actuators);
+						} else {
+							_actuators_0_pub = orb_advertise(ORB_ID(actuator_controls_0), &_actuators);
+						}
 					}
 				}
 			}

@@ -76,6 +76,10 @@
 #include <ecl/attitude_fw/ecl_roll_controller.h>
 #include <ecl/attitude_fw/ecl_yaw_controller.h>
 
+// James adds
+#include <uORB/topics/vehicle_transition_state.h>
+
+
 /**
  * Fixedwing attitude control app start / stop handling function
  *
@@ -609,6 +613,12 @@ FixedwingAttitudeControl::task_main()
 	_global_pos_sub = orb_subscribe(ORB_ID(vehicle_global_position));
 	_vehicle_status_sub = orb_subscribe(ORB_ID(vehicle_status));
 
+	// James adds
+	int _transition_state_sub = orb_subscribe(ORB_ID(vehicle_transition_state));
+	struct vehicle_transition_state_s _transition_state;
+	memset(&_transition_state,0,sizeof(_transition_state));
+
+
 	/* rate limit vehicle status updates to 5Hz */
 	orb_set_interval(_vcontrol_mode_sub, 200);
 	/* rate limit attitude control to 50 Hz (with some margin, so 17 ms) */
@@ -641,6 +651,9 @@ FixedwingAttitudeControl::task_main()
 
 		/* wait for up to 500ms for data */
 		int pret = poll(&fds[0], (sizeof(fds) / sizeof(fds[0])), 100);
+
+		// James adds. Get latest vehicle state from uORB.
+		orb_copy(ORB_ID(vehicle_transition_state),_transition_state_sub,&_transition_state);
 
 		/* timed out - periodic check for _task_should_exit, etc. */
 		if (pret == 0)
@@ -795,13 +808,16 @@ FixedwingAttitudeControl::task_main()
 					att_sp.thrust = throttle_sp;
 
 					/* lazily publish the setpoint only once available */
-					if (_attitude_sp_pub > 0) {
-						/* publish the attitude setpoint */
-						orb_publish(ORB_ID(vehicle_attitude_setpoint), _attitude_sp_pub, &att_sp);
+					// James adds. We only publish if not in rotor craft mode, state 0.
+					if (_transition_state.vehicle_state != 0){
+						if (_attitude_sp_pub > 0) {
+							/* publish the attitude setpoint */
+							orb_publish(ORB_ID(vehicle_attitude_setpoint), _attitude_sp_pub, &att_sp);
 
-					} else {
-						/* advertise and publish */
-						_attitude_sp_pub = orb_advertise(ORB_ID(vehicle_attitude_setpoint), &att_sp);
+						} else {
+							/* advertise and publish */
+							_attitude_sp_pub = orb_advertise(ORB_ID(vehicle_attitude_setpoint), &att_sp);
+						}
 					}
 				}
 
@@ -911,13 +927,16 @@ FixedwingAttitudeControl::task_main()
 
 				rates_sp.timestamp = hrt_absolute_time();
 
-				if (_rate_sp_pub > 0) {
-					/* publish the attitude setpoint */
-					orb_publish(ORB_ID(vehicle_rates_setpoint), _rate_sp_pub, &rates_sp);
+				// James adds. We only publish if not in rotor craft mode, state 0.
+				if (_transition_state.vehicle_state != 0){
+					if (_rate_sp_pub > 0) {
+						/* publish the attitude setpoint */
+						orb_publish(ORB_ID(vehicle_rates_setpoint), _rate_sp_pub, &rates_sp);
 
-				} else {
-					/* advertise and publish */
-					_rate_sp_pub = orb_advertise(ORB_ID(vehicle_rates_setpoint), &rates_sp);
+					} else {
+						/* advertise and publish */
+						_rate_sp_pub = orb_advertise(ORB_ID(vehicle_rates_setpoint), &rates_sp);
+					}
 				}
 
 			} else {
@@ -937,26 +956,29 @@ FixedwingAttitudeControl::task_main()
 			_actuators.timestamp = hrt_absolute_time();
 			_actuators_airframe.timestamp = hrt_absolute_time();
 
-			if (_actuators_0_pub > 0) {
-				/* publish the attitude setpoint */
-				orb_publish(ORB_ID(actuator_controls_0), _actuators_0_pub, &_actuators);
+			// James adds. We only publish if not in rotor craft mode, state 0.
+			if (_transition_state.vehicle_state != 0){
+				if (_actuators_0_pub > 0) {
+					/* publish the attitude setpoint */
+					orb_publish(ORB_ID(actuator_controls_0), _actuators_0_pub, &_actuators);
 
-			} else {
-				/* advertise and publish */
-				_actuators_0_pub = orb_advertise(ORB_ID(actuator_controls_0), &_actuators);
-			}
+				} else {
+					/* advertise and publish */
+					_actuators_0_pub = orb_advertise(ORB_ID(actuator_controls_0), &_actuators);
+				}
 
-			if (_actuators_1_pub > 0) {
-				/* publish the attitude setpoint */
-				orb_publish(ORB_ID(actuator_controls_1), _actuators_1_pub, &_actuators_airframe);
-//				warnx("%.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f",
-//						(double)_actuators_airframe.control[0], (double)_actuators_airframe.control[1], (double)_actuators_airframe.control[2],
-//						(double)_actuators_airframe.control[3], (double)_actuators_airframe.control[4], (double)_actuators_airframe.control[5],
-//						(double)_actuators_airframe.control[6], (double)_actuators_airframe.control[7]);
+				if (_actuators_1_pub > 0) {
+					/* publish the attitude setpoint */
+					orb_publish(ORB_ID(actuator_controls_1), _actuators_1_pub, &_actuators_airframe);
+	//				warnx("%.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f",
+	//						(double)_actuators_airframe.control[0], (double)_actuators_airframe.control[1], (double)_actuators_airframe.control[2],
+	//						(double)_actuators_airframe.control[3], (double)_actuators_airframe.control[4], (double)_actuators_airframe.control[5],
+	//						(double)_actuators_airframe.control[6], (double)_actuators_airframe.control[7]);
 
-			} else {
-				/* advertise and publish */
-				_actuators_1_pub = orb_advertise(ORB_ID(actuator_controls_1), &_actuators_airframe);
+				} else {
+					/* advertise and publish */
+					_actuators_1_pub = orb_advertise(ORB_ID(actuator_controls_1), &_actuators_airframe);
+				}
 			}
 
 		}
