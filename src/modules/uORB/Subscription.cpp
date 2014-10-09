@@ -54,6 +54,7 @@
 #include "topics/vehicle_rates_setpoint.h"
 // James adds
 #include "topics/vehicle_transition_state.h"
+#include "topics/pod_swashplate_setpoint.h"
 
 
 namespace uORB
@@ -106,5 +107,6 @@ template class __EXPORT Subscription<vehicle_attitude_setpoint_s>;
 template class __EXPORT Subscription<vehicle_rates_setpoint_s>;
 // James adds
 template class __EXPORT Subscription<vehicle_transition_state_s>;
+template class __EXPORT Subscription<pod_swashplate_setpoint_s>;
 
 } // namespace uORB

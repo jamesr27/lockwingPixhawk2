@@ -229,3 +229,7 @@ ORB_DEFINE(wind_estimate, struct wind_estimate_s);
 // James adds the next 2 lines.
 #include "topics/vehicle_transition_state.h"
 ORB_DEFINE(vehicle_transition_state, struct vehicle_transition_state_s);
+
+// James adds pod swashplate setpoint
+#include "topics/pod_swashplate_setpoint.h"
+ORB_DEFINE(pod_swashplate_setpoint, struct pod_swashplate_setpoint_s);

@@ -18,7 +18,7 @@ MODULES		+= drivers/stm32/adc
 MODULES		+= drivers/stm32/tone_alarm
 MODULES		+= drivers/led
 MODULES		+= drivers/px4fmu
-MODULES		+= drivers/px4io
+#MODULES		+= drivers/px4io
 MODULES		+= drivers/boards/px4fmu-v2
 MODULES		+= drivers/rgbled
 MODULES		+= drivers/mpu6000
@@ -42,6 +42,9 @@ MODULES		+= modules/sensors
 MODULES		+= drivers/mkblctrl
 MODULES		+= drivers/pca8574
 MODULES		+= drivers/px4flow
+# James adds pods2 to the list
+MODULES 	+= drivers/pods2
+#MODULES		+= modules/jamesJunk #This was a can testing app
 
 
 # Needs to be burned to the ground and re-written; for now,

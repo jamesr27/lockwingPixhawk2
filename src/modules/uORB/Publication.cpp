@@ -50,6 +50,7 @@
 #include "topics/tecs_status.h"
 // James adds
 #include "topics/vehicle_transition_state.h"
+#include "topics/pod_swashplate_setpoint.h"
 
 namespace uORB {
 
@@ -82,5 +83,6 @@ template class __EXPORT Publication<encoders_s>;
 template class __EXPORT Publication<tecs_status_s>;
 // James adds
 template class __EXPORT Publication<vehicle_transition_state_s>;
+template class __EXPORT Publication<pod_swashplate_setpoint_s>;
 
 }
