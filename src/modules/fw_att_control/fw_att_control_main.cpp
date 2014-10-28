@@ -753,7 +753,11 @@ FixedwingAttitudeControl::task_main()
 				 * Forcing the scaling to this value allows reasonable handheld tests.
 				 */
 
-				float airspeed_scaling = _parameters.airspeed_trim / ((airspeed < _parameters.airspeed_min) ? _parameters.airspeed_min : airspeed);
+				// @@@ James adds.
+				// Brett says that he loses control authority at low speeds. Perhaps it is the speed values set in the
+				// parameters that are causing this more than anything else. We can set the min airspeed down, or hack this line.
+				//float airspeed_scaling = _parameters.airspeed_trim / ((airspeed < _parameters.airspeed_min) ? _parameters.airspeed_min : airspeed);
+				float airspeed_scaling = 1.5;
 
 				float roll_sp = _parameters.rollsp_offset_rad;
 				float pitch_sp = _parameters.pitchsp_offset_rad;

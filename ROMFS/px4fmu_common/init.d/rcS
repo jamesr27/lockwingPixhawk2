@@ -480,95 +480,113 @@ then
 		ardrone_interface start -d /dev/ttyS1
 	fi
 
+# James modifies the fixed/mc startup portions here to start the files that we want.
+
+	# 1. Set the mixer we want. We always want the fixed wing mixer.
+	set MIXER FMU_AERT
+	# 2. Mav type. 1 0 fixed wing, 2 - quad. Don't know what this really does.
+	set MAV_TYPE 1
+	param set MAV_TYPE $MAV_TYPE
+    # 3. Load mixer and configure outputs
+	sh /etc/init.d/rc.interface
+	# 4. Run the multicopter apps script. It starts the relevant fixed wing stuff too.
+	sh /etc/init.d/rc.mc_apps
+	# 5. Load the defaults. I don't know if this is needed....
+	sh /etc/init.d/rc.mc_defaults
+	
+	# The lines commented out below are the original ones.
+
+
+
 	#
 	# Fixed wing setup
 	#
-	if [ $VEHICLE_TYPE == fw ]
-	then
-		echo "[init] Vehicle type: FIXED WING"
-
-		if [ $MIXER == none ]
-		then
-			# Set default mixer for fixed wing if not defined
-			set MIXER FMU_AERT
-		fi
-
-		if [ $MAV_TYPE == none ]
-		then
-			# Use MAV_TYPE = 1 (fixed wing) if not defined
-			set MAV_TYPE 1
-		fi
-
-		param set MAV_TYPE $MAV_TYPE
-
-		# Load mixer and configure outputs
-		sh /etc/init.d/rc.interface
-
-		# Start standard fixedwing apps
-		if [ $LOAD_DEFAULT_APPS == yes ]
-		then
-			sh /etc/init.d/rc.fw_apps
-		fi
-	fi
-
-	#
-	# Multicopters setup
-	#
-	if [ $VEHICLE_TYPE == mc ]
-	then
-		echo "[init] Vehicle type: MULTICOPTER"
-
-		if [ $MIXER == none ]
-		then
-			echo "Default mixer for multicopter not defined"
-		fi
-
-		if [ $MAV_TYPE == none ]
-		then
-			# Use mixer to detect vehicle type
-			if [ $MIXER == FMU_quad_x -o $MIXER == FMU_quad_+ ]
-			then
-				set MAV_TYPE 2
-			fi
-			if [ $MIXER == FMU_quad_w ]
-			then
-				set MAV_TYPE 2
-			fi
-			if [ $MIXER == FMU_hexa_x -o $MIXER == FMU_hexa_+ ]
-			then
-				set MAV_TYPE 13
-			fi
-			if [ $MIXER == FMU_hexa_cox ]
-			then
-				set MAV_TYPE 13
-			fi
-			if [ $MIXER == FMU_octo_x -o $MIXER == FMU_octo_+ ]
-			then
-				set MAV_TYPE 14
-			fi
-			if [ $MIXER == FMU_octo_cox ]
-			then
-				set MAV_TYPE 14
-			fi
-		fi
-
-		# Still no MAV_TYPE found
-		if [ $MAV_TYPE == none ]
-		then
-			echo "Unknown MAV_TYPE"
-		else
-			param set MAV_TYPE $MAV_TYPE
-		fi
-
-		# Load mixer and configure outputs
-		sh /etc/init.d/rc.interface
-
-		# Start standard multicopter apps
-		if [ $LOAD_DEFAULT_APPS == yes ]
-		then
-			sh /etc/init.d/rc.mc_apps
-		fi
-	fi
+#	if [ $VEHICLE_TYPE == fw ]
+#	then
+#		echo "[init] Vehicle type: FIXED WING"
+#
+#		if [ $MIXER == none ]
+#		then
+#			# Set default mixer for fixed wing if not defined
+#			set MIXER FMU_AERT
+#		fi
+#
+#		if [ $MAV_TYPE == none ]
+#		then
+#			# Use MAV_TYPE = 1 (fixed wing) if not defined
+#			set MAV_TYPE 1
+#		fi
+#
+#		param set MAV_TYPE $MAV_TYPE
+#
+#		# Load mixer and configure outputs
+#		sh /etc/init.d/rc.interface
+#
+#		# Start standard fixedwing apps
+#		if [ $LOAD_DEFAULT_APPS == yes ]
+#		then
+#			sh /etc/init.d/rc.fw_apps
+#		fi
+#	fi
+#
+#	#
+#	# Multicopters setup
+#	#
+#	if [ $VEHICLE_TYPE == mc ]
+#	then
+#		echo "[init] Vehicle type: MULTICOPTER"
+#
+#		if [ $MIXER == none ]
+#		then
+#			echo "Default mixer for multicopter not defined"
+#		fi
+#
+#		if [ $MAV_TYPE == none ]
+#		then
+#			# Use mixer to detect vehicle type
+#			if [ $MIXER == FMU_quad_x -o $MIXER == FMU_quad_+ ]
+#			then
+#				set MAV_TYPE 2
+#			fi
+#			if [ $MIXER == FMU_quad_w ]
+#			then
+#				set MAV_TYPE 2
+#			fi
+#			if [ $MIXER == FMU_hexa_x -o $MIXER == FMU_hexa_+ ]
+#			then
+#				set MAV_TYPE 13
+#			fi
+#			if [ $MIXER == FMU_hexa_cox ]
+#			then
+#				set MAV_TYPE 13
+#			fi
+#			if [ $MIXER == FMU_octo_x -o $MIXER == FMU_octo_+ ]
+#			then
+#				set MAV_TYPE 14
+#			fi
+#			if [ $MIXER == FMU_octo_cox ]
+#			then
+#				set MAV_TYPE 14
+#			fi
+#		fi
+#
+#		# Still no MAV_TYPE found
+#		if [ $MAV_TYPE == none ]
+#		then
+#			echo "Unknown MAV_TYPE"
+#		else
+#			param set MAV_TYPE $MAV_TYPE
+#		fi
+#
+#		# Load mixer and configure outputs
+#		sh /etc/init.d/rc.interface
+#
+#		# Start standard multicopter apps
+#		if [ $LOAD_DEFAULT_APPS == yes ]
+#		then
+#			sh /etc/init.d/rc.mc_apps
+#		fi
+#	fi
 
 	#
 	# Start the navigator

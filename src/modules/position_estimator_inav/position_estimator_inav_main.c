@@ -1,3 +1,6 @@
+// James modifies this program to listen to the transition state controller.
+// It only publishes in state 0 (rotor craft state).
+
 /****************************************************************************
  *
  *   Copyright (C) 2013, 2014 PX4 Development Team. All rights reserved.
@@ -71,6 +74,9 @@
 
 #include "position_estimator_inav_params.h"
 #include "inertial_filter.h"
+
+// James adds.
+#include <uORB/topics/vehicle_transition_state.h>
 
 #define MIN_VALID_W 0.00001f
 #define PUB_INTERVAL 10000	// limit publish rate to 100 Hz
@@ -214,6 +220,11 @@ int position_estimator_inav_thread_main(int argc, char *argv[])
 	int mavlink_fd;
 	mavlink_fd = open(MAVLINK_LOG_DEVICE, 0);
 	mavlink_log_info(mavlink_fd, "[inav] started");
+
+	// James adds
+	int _transition_state_sub = orb_subscribe(ORB_ID(vehicle_transition_state));
+	struct vehicle_transition_state_s _transition_state;
+	memset(&_transition_state,0,sizeof(_transition_state));
 
 	float x_est[2] = { 0.0f, 0.0f };	// pos, vel
 	float y_est[2] = { 0.0f, 0.0f };	// pos, vel
@@ -408,6 +419,9 @@ int position_estimator_inav_thread_main(int argc, char *argv[])
 	while (!thread_should_exit) {
 		int ret = poll(fds, 1, 20); // wait maximal 20 ms = 50 Hz minimum rate
 		hrt_abstime t = hrt_absolute_time();
+
+		// James adds. Get latest vehicle state from uORB.
+		orb_copy(ORB_ID(vehicle_transition_state),_transition_state_sub,&_transition_state);
 
 		if (ret < 0) {
 			/* poll error */
@@ -1138,7 +1152,9 @@ int position_estimator_inav_thread_main(int argc, char *argv[])
 			local_pos.timestamp = t;
 
 			// James adds _mc below
-			orb_publish(ORB_ID(vehicle_local_position), vehicle_local_position_pub, &local_pos);
+			if (_transition_state.vehicle_state == 0){
+				orb_publish(ORB_ID(vehicle_local_position), vehicle_local_position_pub, &local_pos);
+			}
 
 			if (local_pos.xy_global && local_pos.z_global) {
 				/* publish global position */
@@ -1161,13 +1177,15 @@ int position_estimator_inav_thread_main(int argc, char *argv[])
 				global_pos.eph = eph;
 				global_pos.epv = epv;
 
-				if (vehicle_global_position_pub < 0) {
-					// James adds _mc below
-					vehicle_global_position_pub = orb_advertise(ORB_ID(vehicle_global_position), &global_pos);
+				if (_transition_state.vehicle_state == 0){
+					if (vehicle_global_position_pub < 0) {
+						// James adds _mc below
+						vehicle_global_position_pub = orb_advertise(ORB_ID(vehicle_global_position), &global_pos);
 
-				} else {
-					// James adds _mc below
-					orb_publish(ORB_ID(vehicle_global_position), vehicle_global_position_pub, &global_pos);
+					} else {
+						// James adds _mc below
+						orb_publish(ORB_ID(vehicle_global_position), vehicle_global_position_pub, &global_pos);
+					}
 				}
 			}
 		}

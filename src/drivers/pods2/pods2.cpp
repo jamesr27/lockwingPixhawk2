@@ -885,7 +885,7 @@ PX4IO::task_main()
 
     if (can == NULL){
     	printf("failed to init CAN\n");
-    }
+   }
 
 	jamesRet = can_register("/dev/can0", can);
     if (jamesRet > 0){
@@ -916,8 +916,6 @@ PX4IO::task_main()
 
 	// We also want the rc inputs, for channel 5 mainly.
 	rc_input_values	_rc_val;
-
-
 
 	// End of James' additions...
 
@@ -982,8 +980,10 @@ PX4IO::task_main()
 
 		/* sleep waiting for topic updates, but no more than 20ms */
 		// You can use the below 20 to set this loop rate
+		// James changes to 15, 66.666 Hz. Trying to improve stability.
+		// You must balance this against cpu time.
 		unlock();
-		int ret = ::poll(fds, 1, 20);
+		int ret = ::poll(fds, 1, 15);
 		lock();
 
 		/* this would be bad... */
@@ -1026,19 +1026,24 @@ PX4IO::task_main()
 
 			// 2. Now we have a struct of 4. 1: Roll, 2: pitch, 3: yaw, 4: throttle (well collective really)
 			// We now mix these ourselves and put them into the pod_outputs.
+
 			pod_outputs.collective_left = 256*(_controls.control[3] + _controls.control[0]);
 			pod_outputs.collective_right= 256*(_controls.control[3] - _controls.control[0]);
 			pod_outputs.pitch_left 		= 127 - 256*(_controls.control[1] - _controls.control[2]);
 			pod_outputs.pitch_right 	= 127 - 256*(_controls.control[1] + _controls.control[2]);
 
+
 			// Now deal with rpm. If not armed, rpm is always 0.
 			// If it is armed, we need to assign channel 5's value to the rpm. Channel 5 is the fifth channel,
 			// and is probably [4] or something.
+
 			if (_armed.armed == false)
 				{
 					pod_outputs.rpm_left = 0;
 					pod_outputs.rpm_right = 0;
 				}
+
+
 			else
 				{
 					// Get the channel inputs
@@ -1051,7 +1056,9 @@ PX4IO::task_main()
 				}
 
 
+
 			// check limits
+
 			if(pod_outputs.collective_left < 0) pod_outputs.collective_left = 1;
 			if(pod_outputs.collective_left >255) pod_outputs.collective_left = 255;
 			if(pod_outputs.collective_right < 0) pod_outputs.collective_right  = 1;
@@ -1062,6 +1069,8 @@ PX4IO::task_main()
 			if(pod_outputs.pitch_right >255) pod_outputs.pitch_right = 255;
 			if(pod_outputs.rpm_left < 0) pod_outputs.rpm_left = 1;
 			if(pod_outputs.rpm_left >255) pod_outputs.rpm_left = 255;
+			if(pod_outputs.rpm_right < 0) pod_outputs.rpm_right = 1;
+			if(pod_outputs.rpm_right >255) pod_outputs.rpm_right = 255;
 
 			pod_outputs.timestamp = hrt_absolute_time();
 
@@ -1075,8 +1084,9 @@ PX4IO::task_main()
 		    podRight.cm_data[4]=pod_outputs.pitch_right; //pitch cyclic
 
 
+
 			// 4. Send the CAN messages. Only do it if can hardware initialised. Just a debug check for now.
-		    if (fd >= 0)
+		    if  (0) //(fd >= 0)  Just remove the check to get it to compile for fixed wing.
 		    	{
 					//usleep(100);
 
@@ -1085,7 +1095,7 @@ PX4IO::task_main()
 					if (nbytes != msgsize)
 						printf("ERROR: write(%d) returned %d\n", msgsize, nbytes);
 
-					usleep(70);
+					usleep(100);
 					nbytes = ::write(fd, &podRight, msgsize);
 
 					if (nbytes != msgsize)
