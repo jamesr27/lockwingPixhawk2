@@ -1083,6 +1083,18 @@ PX4IO::task_main()
 		    podRight.cm_data[3]=pod_outputs.collective_right; //collective
 		    podRight.cm_data[4]=pod_outputs.pitch_right; //pitch cyclic
 
+		    // Hack the stop command in
+		    if (_rc_val.values[6] < 1500.0)
+		    {
+		    	podLeft.cm_data[1] = 1;
+		    	podRight.cm_data[1] = 1;
+		    }
+		    else
+		    {
+		    	podLeft.cm_data[1] = 0;
+		    	podRight.cm_data[1] = 0;
+		    }
+
 
 
 			// 4. Send the CAN messages. Only do it if can hardware initialised. Just a debug check for now.

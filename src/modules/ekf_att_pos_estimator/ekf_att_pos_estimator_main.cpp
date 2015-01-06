@@ -750,7 +750,7 @@ FixedwingEstimator::task_main()
 #else
 	_sensor_combined_sub = orb_subscribe(ORB_ID(sensor_combined));
 	/* XXX remove this!, BUT increase the data buffer size! */
-	orb_set_interval(_sensor_combined_sub, 5);
+	orb_set_interval(_sensor_combined_sub, 9);
 #endif
 
 	/* sets also parameters in the EKF object */
@@ -1572,6 +1572,7 @@ FixedwingEstimator::start()
 	ASSERT(_estimator_task == -1);
 
 	/* start the task */
+	//James edits. Increase memory usage from 8000 to 16000.
 	_estimator_task = task_spawn_cmd("ekf_att_pos_estimator",
 					 SCHED_DEFAULT,
 					 SCHED_PRIORITY_MAX - 40,
