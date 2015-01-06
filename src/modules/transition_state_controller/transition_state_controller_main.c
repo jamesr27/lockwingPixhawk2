@@ -92,7 +92,7 @@ int transition_state_controller_thread_main(int argc,char *argv[])
 
 
 	// This is a crap line because it was moaning about variable not being used. This was causing an error for some reason.
-	vehicle_state = 1;
+	vehicle_state = 0;
 
 	while (!thread_should_exit){
 		//

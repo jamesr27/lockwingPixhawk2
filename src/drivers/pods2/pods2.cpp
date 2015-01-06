@@ -1098,7 +1098,7 @@ PX4IO::task_main()
 
 
 			// 4. Send the CAN messages. Only do it if can hardware initialised. Just a debug check for now.
-		    if  (0) //(fd >= 0)  Just remove the check to get it to compile for fixed wing.
+		    if  (fd >= 0)  //James: Put the check back in.
 		    	{
 					//usleep(100);
 
