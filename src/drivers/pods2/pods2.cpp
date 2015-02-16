@@ -1060,17 +1060,17 @@ PX4IO::task_main()
 			// check limits
 
 			if(pod_outputs.collective_left < 0) pod_outputs.collective_left = 1;
-			if(pod_outputs.collective_left >255) pod_outputs.collective_left = 255;
+			if(pod_outputs.collective_left > 255) pod_outputs.collective_left = 255;
 			if(pod_outputs.collective_right < 0) pod_outputs.collective_right  = 1;
-			if(pod_outputs.collective_right >255) pod_outputs.collective_right = 255;
+			if(pod_outputs.collective_right > 255) pod_outputs.collective_right = 255;
 			if(pod_outputs.pitch_left < 0) pod_outputs.pitch_left = 1;
-			if(pod_outputs.pitch_left >255) pod_outputs.pitch_left = 255;
+			if(pod_outputs.pitch_left > 255) pod_outputs.pitch_left = 255;
 			if(pod_outputs.pitch_right < 0) pod_outputs.pitch_right = 1;
-			if(pod_outputs.pitch_right >255) pod_outputs.pitch_right = 255;
+			if(pod_outputs.pitch_right > 255) pod_outputs.pitch_right = 255;
 			if(pod_outputs.rpm_left < 0) pod_outputs.rpm_left = 1;
-			if(pod_outputs.rpm_left >255) pod_outputs.rpm_left = 255;
+			if(pod_outputs.rpm_left > 255) pod_outputs.rpm_left = 255;
 			if(pod_outputs.rpm_right < 0) pod_outputs.rpm_right = 1;
-			if(pod_outputs.rpm_right >255) pod_outputs.rpm_right = 255;
+			if(pod_outputs.rpm_right > 255) pod_outputs.rpm_right = 255;
 
 			pod_outputs.timestamp = hrt_absolute_time();
 

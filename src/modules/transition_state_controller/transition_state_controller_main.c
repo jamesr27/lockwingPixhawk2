@@ -1,8 +1,8 @@
 //	James Reeves 07/10/2014
 //
 //	This Daemon manages the state of lockWing. It reads the appropriate switch on the remote,
-//  and sets the value of a variable in a uORB that all other processes subscribe to. This individual controllers
-//  (fixed wing and lock rotor) are aware of this and respond by them selves to this "global" state variable.
+//  and sets the value of a variable in a uORB that all other processes subscribe to. The individual controllers
+//  (fixed wing and lock rotor) are aware of this and respond by themselves to this "global" state variable.
 //
 //  This daemon is responsible for handling all transition related communications (CAN messages), with the pods too.
 //  It has its own logic and will perform a set of checks before executing any vehicle state change.
