@@ -7,7 +7,7 @@
 
 # Now we are going to start experimenting.
 # The default quad estimator is the attitude_estimator_ekf, this works fine.
-# The default fixed wing estimator is ekf_att_poss_estimator
+# The default fixed wing estimator is ekf_att_pos_estimator
 
 
 # The fixed wing estimator now works with the quad. We have to use the quad position estimator
@@ -17,7 +17,7 @@
 # issues in turning them on and off during transition.
 
 # At present it is only planned to limit the publishing abilities of the controllers and position estimators
-# depending upon the state that the vehicle is in. We'll see if we get this to work...
+# depending upon the state that the vehicle is in. We'll see if we get this to work... It appears to work at this stage.
 
 # TRANSITION STATE CONTROLLER
 transition_state_controller start

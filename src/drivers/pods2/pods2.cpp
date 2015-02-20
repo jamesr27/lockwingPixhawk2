@@ -1067,9 +1067,9 @@ PX4IO::task_main()
 			if(pod_outputs.pitch_left > 255) pod_outputs.pitch_left = 255;
 			if(pod_outputs.pitch_right < 0) pod_outputs.pitch_right = 1;
 			if(pod_outputs.pitch_right > 255) pod_outputs.pitch_right = 255;
-			if(pod_outputs.rpm_left < 0) pod_outputs.rpm_left = 1;
+			if(pod_outputs.rpm_left < 0) pod_outputs.rpm_left = 0;
 			if(pod_outputs.rpm_left > 255) pod_outputs.rpm_left = 255;
-			if(pod_outputs.rpm_right < 0) pod_outputs.rpm_right = 1;
+			if(pod_outputs.rpm_right < 0) pod_outputs.rpm_right = 0;
 			if(pod_outputs.rpm_right > 255) pod_outputs.rpm_right = 255;
 
 			pod_outputs.timestamp = hrt_absolute_time();
@@ -1083,6 +1083,8 @@ PX4IO::task_main()
 		    podRight.cm_data[3]=pod_outputs.collective_right; //collective
 		    podRight.cm_data[4]=pod_outputs.pitch_right; //pitch cyclic
 
+
+		    // We need to put the stop command in more elegantly. Transition switch is channel 7 on the remote.
 		    // Hack the stop command in
 		    if (_rc_val.values[6] < 1500.0)
 		    {
