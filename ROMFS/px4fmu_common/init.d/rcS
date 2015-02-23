@@ -486,7 +486,7 @@ then
 	set MIXER FMU_AERT
 	# 2. Mav type. 1 0 fixed wing, 2 - quad. Don't know what this really does. Seems to change the sensor configuration.
 	# With 1 it always seems to want the pitot probe before it will arm, in 2 it doesn't. 
-	set MAV_TYPE 1
+	set MAV_TYPE 2
 	param set MAV_TYPE $MAV_TYPE
     # 3. Load mixer and configure outputs
 	sh /etc/init.d/rc.interface
