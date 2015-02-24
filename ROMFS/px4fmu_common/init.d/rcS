@@ -484,9 +484,11 @@ then
 
 	# 1. Set the mixer we want. We always want the fixed wing mixer.
 	set MIXER FMU_AERT
-	# 2. Mav type. 1 0 fixed wing, 2 - quad. Don't know what this really does. Seems to change the sensor configuration.
-	# With 1 it always seems to want the pitot probe before it will arm, in 2 it doesn't. 
-	set MAV_TYPE 2
+	# 2. Mav type. 1 - fixed wing, 2 - quad. Don't know what this really does. Seems to change the sensor configuration.
+	# With 1 it always seems to want the pitot probe before it will arm, in 2 it doesn't. We can change this
+	# by setting the vehicle type variable status.system_type, in vehicle_status uORB. Well I think so at this point.
+	# I try to start it with type 1 so the air speed sensor etc. works.
+	set MAV_TYPE 1
 	param set MAV_TYPE $MAV_TYPE
     # 3. Load mixer and configure outputs
 	sh /etc/init.d/rc.interface

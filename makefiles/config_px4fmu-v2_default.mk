@@ -44,6 +44,7 @@ MODULES		+= drivers/pca8574
 MODULES		+= drivers/px4flow
 # James adds pods2 to the list
 MODULES 	+= drivers/pods2
+MODULES		+= modules/commanderLockwing
 #MODULES		+= modules/jamesJunk #This was a can testing app
 
 
@@ -74,7 +75,7 @@ MODULES		+= systemcmds/ver
 #
 # General system control
 #
-MODULES		+= modules/commander
+#MODULES		+= modules/commander
 MODULES		+= modules/navigator
 MODULES		+= modules/mavlink
 MODULES		+= modules/gpio_led
