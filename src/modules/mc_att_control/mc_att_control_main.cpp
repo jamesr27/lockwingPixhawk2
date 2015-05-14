@@ -797,7 +797,10 @@ MulticopterAttitudeControl::task_main()
 			arming_status_poll();
 			vehicle_manual_poll();
 
-			if (_v_control_mode.flag_control_attitude_enabled) {
+			// James thinks the attitude flag is messed up for the rotor mode. So as a quick hack we make this 1.
+			// This hack doesn't work. We need to do more.
+			if (_transition_state.vehicle_state == 0) {
+
 				control_attitude(dt);
 
 				/* publish attitude rates setpoint */
@@ -819,8 +822,10 @@ MulticopterAttitudeControl::task_main()
 
 			} else {
 				/* attitude controller disabled, poll rates setpoint topic */
-				if (_v_control_mode.flag_control_manual_enabled) {
-					/* manual rates control - ACRO mode */
+				// Have to hack this to zero. We should never need this.
+				//if (_v_control_mode.flag_control_manual_enabled) {
+				if (0){
+									/* manual rates control - ACRO mode */
 					_rates_sp = math::Vector<3>(_manual_control_sp.y, -_manual_control_sp.x, _manual_control_sp.r).emult(_params.acro_rate_max);
 					_thrust_sp = _manual_control_sp.z;
 
@@ -854,7 +859,8 @@ MulticopterAttitudeControl::task_main()
 				}
 			}
 
-			if (_v_control_mode.flag_control_rates_enabled) {
+			// James. Hack this to 1 as well.
+			if (_transition_state.vehicle_state == 0) {
 				control_attitude_rates(dt);
 
 				/* publish actuator controls */

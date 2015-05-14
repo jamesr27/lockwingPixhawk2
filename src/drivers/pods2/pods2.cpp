@@ -1086,7 +1086,7 @@ PX4IO::task_main()
 
 		    // We need to put the stop command in more elegantly. Transition switch is channel 7 on the remote.
 		    // Hack the stop command in
-		    if (_rc_val.values[6] < 1500.0)
+		    if (_rc_val.values[6] > 1500.0)
 		    {
 		    	podLeft.cm_data[1] = 1;
 		    	podRight.cm_data[1] = 1;
@@ -1102,7 +1102,7 @@ PX4IO::task_main()
 			// 4. Send the CAN messages. Only do it if can hardware initialised. Just a debug check for now.
 		    if  (fd >= 0)  //James: Put the check back in.
 		    	{
-					//usleep(100);
+					usleep(100);
 
 					nbytes = ::write(fd, &podLeft, msgsize);
 

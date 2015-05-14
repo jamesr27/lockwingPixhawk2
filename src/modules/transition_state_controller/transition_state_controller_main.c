@@ -154,11 +154,14 @@ int transition_state_controller_thread_main(int argc,char *argv[])
 		if (vehicle_state == 1 || vehicle_state == 5 || vehicle_state == 6)
 		{
 			status.system_type = 1;
+			// Below doesn't seem to work.
+			//status.is_rotary_wing = 0;	// This variable is used to determine whether rates and attitude are stabilized.
 		}
 		// Set to quad. system_type = 2.
 		if (vehicle_state == 0)
 		{
 			status.system_type = 2;
+			//status.is_rotary_wing = 1;	// This should help sort out the stabilization switching. Doesn't work
 		}
 		// Publish our modified status structure.
 		orb_publish(ORB_ID(vehicle_status),vehicle_status_pub,&status);

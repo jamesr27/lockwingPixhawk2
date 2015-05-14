@@ -84,6 +84,7 @@
 #include <uORB/topics/mission_result.h>
 #include <uORB/topics/telemetry_status.h>
 
+
 #include <drivers/drv_led.h>
 #include <drivers/drv_hrt.h>
 #include <drivers/drv_tone_alarm.h>
@@ -697,6 +698,9 @@ int commander_thread_main(int argc, char *argv[])
 	nav_states_str[NAVIGATION_STATE_TERMINATION]		= "TERMINATION";
 	nav_states_str[NAVIGATION_STATE_OFFBOARD]		= "OFFBOARD";
 
+
+
+
 	/* pthread for slow low prio thread */
 	pthread_t commander_low_prio_thread;
 
@@ -956,6 +960,7 @@ int commander_thread_main(int argc, char *argv[])
 		}
 
 		arming_ret = TRANSITION_NOT_CHANGED;
+
 
 
 		/* update parameters */
@@ -1887,6 +1892,7 @@ set_main_state_rc(struct vehicle_status_s *status_local, struct manual_control_s
 	return res;
 }
 
+// James adds an argument to this function...
 void
 set_control_mode()
 {
@@ -1897,7 +1903,13 @@ set_control_mode()
 	control_mode.flag_system_hil_enabled = status.hil_state == HIL_STATE_ON;
 	control_mode.flag_control_offboard_enabled = false;
 
+
+
+
 	switch (status.nav_state) {
+
+
+
 	case NAVIGATION_STATE_MANUAL:
 		control_mode.flag_control_manual_enabled = true;
 		control_mode.flag_control_auto_enabled = false;
